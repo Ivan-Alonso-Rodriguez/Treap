@@ -19,12 +19,13 @@ function cloneTree(node) {
   return c;
 }
 
-//Treap con animación suavizada
+//Treap con animacion suavizada y resaltado
 class TreapArbol {
   constructor() {
     this.raiz = null;
     this.steps = [];
     this.stepMessages = [];
+    this.stepHighlights = [];
     this.layouts = [];
     this.dataMaps = [];
     this.isAnimating = false;
@@ -33,11 +34,14 @@ class TreapArbol {
     this.stepDelay = 30;
   }
 
-  recordStep(msg) {
+  //graba snapshot, mensaje y nodo a resaltar
+  recordStep(msg, highlight = null) {
     this.steps.push(cloneTree(this.raiz));
     this.stepMessages.push(msg);
+    this.stepHighlights.push(highlight);
   }
 
+  //Rotaciones
   rotarIzquierda(nodo) {
     const hijo = nodo.der;
     nodo.der = hijo.izq;
@@ -51,6 +55,7 @@ class TreapArbol {
     return hijo;
   }
 
+  //Insercion/Eliminacion normal
   insertarNodo(nodo, valor) {
     if (!nodo) return new NodoTreap(valor);
     if (valor < nodo.clave) {
@@ -86,34 +91,35 @@ class TreapArbol {
   animateInsert(valor) {
     this.steps = [];
     this.stepMessages = [];
+    this.stepHighlights = [];
     this.isAnimating = true;
     this.stepIndex = 0;
     this.frameCounter = 0;
-    this.recordStep(`Inicio inserción de ${valor}`);
+    this.recordStep(`Inicio inserción de ${valor}`, null);
     this.raiz = this.insertarNodoSteps(this.raiz, valor);
-    this.recordStep(`Fin de inserción de ${valor}`);
+    this.recordStep(`Fin de inserción de ${valor}`, null);
     this.computeLayouts();
   }
   insertarNodoSteps(nodo, valor) {
     if (!nodo) {
-      this.recordStep(`Creando hoja ${valor}`);
+      this.recordStep(`Creando hoja ${valor}`, valor);
       return new NodoTreap(valor);
     }
-    this.recordStep(`Comparando ${valor} con nodo ${nodo.clave}`);
+    this.recordStep(`Comparando ${valor} con nodo ${nodo.clave}`, nodo.clave);
     if (valor < nodo.clave) {
       nodo.izq = this.insertarNodoSteps(nodo.izq, valor);
       if (nodo.izq.prioridad > nodo.prioridad) {
         nodo = this.rotarDerecha(nodo);
-        this.recordStep(`Rotando derecha en ${nodo.clave}`);
+        this.recordStep(`Rotando derecha en ${nodo.clave}`, nodo.clave);
       }
     } else if (valor > nodo.clave) {
       nodo.der = this.insertarNodoSteps(nodo.der, valor);
       if (nodo.der.prioridad > nodo.prioridad) {
         nodo = this.rotarIzquierda(nodo);
-        this.recordStep(`Rotando izquierda en ${nodo.clave}`);
+        this.recordStep(`Rotando izquierda en ${nodo.clave}`, nodo.clave);
       }
     } else {
-      this.recordStep(`Valor duplicado: ${valor}`);
+      this.recordStep(`Valor duplicado: ${valor}`, nodo.clave);
     }
     return nodo;
   }
@@ -121,33 +127,34 @@ class TreapArbol {
   animateDelete(valor) {
     this.steps = [];
     this.stepMessages = [];
+    this.stepHighlights = [];
     this.isAnimating = true;
     this.stepIndex = 0;
     this.frameCounter = 0;
-    this.recordStep(`Inicio eliminación de ${valor}`);
+    this.recordStep(`Inicio eliminación de ${valor}`, null);
     this.raiz = this.eliminarNodoSteps(this.raiz, valor);
-    this.recordStep(`Fin de eliminación de ${valor}`);
+    this.recordStep(`Fin de eliminación de ${valor}`, null);
     this.computeLayouts();
   }
   eliminarNodoSteps(nodo, valor) {
     if (!nodo) {
-      this.recordStep(`No encontrado ${valor}`);
+      this.recordStep(`No encontrado ${valor}`, null);
       return null;
     }
-    this.recordStep(`Comparando ${valor} con nodo ${nodo.clave}`);
+    this.recordStep(`Comparando ${valor} con nodo ${nodo.clave}`, nodo.clave);
     if (valor < nodo.clave) nodo.izq = this.eliminarNodoSteps(nodo.izq, valor);
     else if (valor > nodo.clave) nodo.der = this.eliminarNodoSteps(nodo.der, valor);
     else {
-      this.recordStep(`Nodo ${valor} encontrado`);
-      if (!nodo.izq) { this.recordStep(`Reemplazando ${valor} por rama derecha`); return nodo.der; }
-      if (!nodo.der) { this.recordStep(`Reemplazando ${valor} por rama izquierda`); return nodo.izq; }
+      this.recordStep(`Nodo ${valor} encontrado`, nodo.clave);
+      if (!nodo.izq) { this.recordStep(`Reemplazando por derecha`, valor); return nodo.der; }
+      if (!nodo.der) { this.recordStep(`Reemplazando por izquierda`, valor); return nodo.izq; }
       if (nodo.izq.prioridad < nodo.der.prioridad) {
         nodo = this.rotarIzquierda(nodo);
-        this.recordStep(`Rotando izquierda en ${nodo.clave}`);
+        this.recordStep(`Rotando izquierda en ${nodo.clave}`, nodo.clave);
         nodo.izq = this.eliminarNodoSteps(nodo.izq, valor);
       } else {
         nodo = this.rotarDerecha(nodo);
-        this.recordStep(`Rotando derecha en ${nodo.clave}`);
+        this.recordStep(`Rotando derecha en ${nodo.clave}`, nodo.clave);
         nodo.der = this.eliminarNodoSteps(nodo.der, valor);
       }
     }
@@ -190,14 +197,16 @@ class TreapArbol {
   countNodes(n) { return n ? 1 + this.countNodes(n.izq) + this.countNodes(n.der) : 0; }
   maxDepth(n)  { return n ? 1 + Math.max(this.maxDepth(n.izq), this.maxDepth(n.der)) : 0; }
 
+  //Animación interpolada con resaltado
   drawInterpolated() {
     const A = this.layouts[this.stepIndex];
     const Bidx = Math.min(this.stepIndex+1, this.layouts.length-1);
     const B = this.layouts[Bidx];
     const D = this.dataMaps[Bidx];
-    const t = (this.stepIndex < this.layouts.length-1)
-            ? this.frameCounter/this.stepDelay  : 1;
+    const H = this.stepHighlights[this.stepIndex];
+    const t = (this.stepIndex < this.layouts.length-1) ? this.frameCounter/this.stepDelay : 1;
 
+    //aristas
     const drawEdges = (n) => {
       if (!n) return;
       const pA = A[n.clave] || B[n.clave];
@@ -220,19 +229,24 @@ class TreapArbol {
     };
     drawEdges(this.steps[Bidx]);
 
+    //nodos
     for (let clave in D) {
       const d = D[clave];
-      const pA = A[clave]||B[clave]; const pB = B[clave];
+      const pA = A[clave] || B[clave]; const pB = B[clave];
       const x = lerp(pA.x,pB.x,t), y = lerp(pA.y,pB.y,t);
-      fill(255); stroke(50); strokeWeight(2); ellipse(x,y,60,60);
+      if (parseInt(clave) === H) fill(255,180,180);
+      else fill(255);
+      stroke(50); strokeWeight(2);
+      ellipse(x,y,60,60);
       noStroke(); fill(0);
       textSize(14); textAlign(CENTER,BOTTOM); text(d.clave,x,y-2);
       fill(100); textSize(12); textAlign(CENTER,TOP); text(d.prioridad,x,y+2);
     }
 
-    document.getElementById('status').innerText = this.stepMessages[this.stepIndex]||'';
+    document.getElementById('status').innerText = this.stepMessages[this.stepIndex] || '';
   }
 
+  // Dibujo estático
   drawStatic() {
     this.assignPositions(this.raiz);
     this._drawNodeStatic(this.raiz);
@@ -242,7 +256,8 @@ class TreapArbol {
     stroke(150); strokeWeight(2);
     if (nodo.izq) line(nodo.x,nodo.y,nodo.izq.x,nodo.izq.y);
     if (nodo.der) line(nodo.x,nodo.y,nodo.der.x,nodo.der.y);
-    fill(255); stroke(50); strokeWeight(2); ellipse(nodo.x,nodo.y,60,60);
+    if (false) fill(255,180,180); else fill(255);
+    stroke(50); strokeWeight(2); ellipse(nodo.x,nodo.y,60,60);
     noStroke(); fill(0); textSize(14); textAlign(CENTER,BOTTOM); text(nodo.clave,nodo.x,nodo.y-2);
     fill(100); textSize(12); textAlign(CENTER,TOP); text(nodo.prioridad,nodo.x,nodo.y+2);
     this._drawNodeStatic(nodo.izq);
