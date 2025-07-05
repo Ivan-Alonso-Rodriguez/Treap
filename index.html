@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Treap Visualizer con Animación y Estado</title>
+  <title>Treap Visualizer con Animación Suavizada</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
   <script src="treap.js"></script>
   <style>
@@ -22,8 +22,6 @@
     }
     #controls input { width: 60px; margin-right: 6px; }
     #controls button { margin-right: 6px; }
-
-    /* Panel de estado */
     #status {
       min-height: 24px;
       padding: 4px 8px;
@@ -34,8 +32,8 @@
       font-family: Verdana, sans-serif;
       font-size: 14px;
       width: 300px;
+      text-align: center;
     }
-
     canvas {
       display: block;
       border: 1px solid #ccc;
