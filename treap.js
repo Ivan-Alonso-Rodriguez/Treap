@@ -1,4 +1,9 @@
-// Nodo equivalente a C++ class Node
+// Control para mostrar status de recorrido unos segundos
+let statusTimerActive = false;
+const statusDisplayTime = 100000; // milisegundos que muestra el resultado final
+
+
+// Nodo similar a C++ class Node
 class Node {
   constructor(c, p) {
     this.clave = c;
@@ -19,7 +24,7 @@ function cloneTree(node) {
   return copy;
 }
 
-// Treap equivalente a C++ class Treap
+// Treap con animaciones y recorridos
 class Treap {
   constructor() {
     this.root = null;
@@ -34,22 +39,22 @@ class Treap {
     this.stepDelay = 30;
   }
 
+  // Rotaciones
   rotarIzquierda(nodo) {
     const temp = nodo.der;
-    const temp2 = temp.izq;
+    nodo.der = temp.izq;
     temp.izq = nodo;
-    nodo.der = temp2;
     return temp;
   }
 
   rotarDerecha(nodo) {
     const temp = nodo.izq;
-    const temp2 = temp.der;
+    nodo.izq = temp.der;
     temp.der = nodo;
-    nodo.izq = temp2;
     return temp;
   }
 
+  // Insercion recursiva
   insert(nodo, clave, prioridad) {
     if (!nodo) return new Node(clave, prioridad);
     if (clave < nodo.clave) {
@@ -62,11 +67,19 @@ class Treap {
     return nodo;
   }
 
+  insertar(clave) {
+    const pr = Math.floor(Math.random() * 100);
+    this.root = this.insert(this.root, clave, pr);
+  }
+
+  // Eliminacion recursiva
   erase(nodo, clave) {
     if (!nodo) return null;
-    if (clave < nodo.clave) nodo.izq = this.erase(nodo.izq, clave);
-    else if (clave > nodo.clave) nodo.der = this.erase(nodo.der, clave);
-    else {
+    if (clave < nodo.clave) {
+      nodo.izq = this.erase(nodo.izq, clave);
+    } else if (clave > nodo.clave) {
+      nodo.der = this.erase(nodo.der, clave);
+    } else {
       if (!nodo.izq) return nodo.der;
       if (!nodo.der) return nodo.izq;
       if (nodo.izq.prioridad > nodo.der.prioridad) {
@@ -80,20 +93,16 @@ class Treap {
     return nodo;
   }
 
+  eliminar(clave) {
+    this.root = this.erase(this.root, clave);
+  }
+
+  // Busqueda recursiva
   search(nodo, clave) {
     if (!nodo) return false;
     if (clave < nodo.clave) return this.search(nodo.izq, clave);
     if (clave > nodo.clave) return this.search(nodo.der, clave);
     return true;
-  }
-
-  insertar(clave) {
-    const pr = Math.floor(Math.random() * 100);
-    this.root = this.insert(this.root, clave, pr);
-  }
-
-  eliminar(clave) {
-    this.root = this.erase(this.root, clave);
   }
 
   buscar(clave) {
@@ -104,25 +113,35 @@ class Treap {
     this.root = null;
   }
 
+  // Animacion base
   recordStep(msg, highlight = null) {
     this.steps.push(cloneTree(this.root));
     this.msgs.push(msg);
     this.highlights.push(highlight);
   }
 
-  animateInsert() {
-    const clave = parseInt(document.getElementById('valorInput').value);
-    if (isNaN(clave)) return;
+  resetAnim() {
     this.steps = [];
     this.msgs = [];
     this.highlights = [];
-    this.isAnimating = true;
     this.stepIndex = 0;
     this.frameCounter = 0;
-    this.recordStep(`Inicio insert(${clave})`);
-    this.root = this.insertSteps(this.root, clave, Math.floor(Math.random() * 100));
-    this.recordStep(`Fin insert(${clave})`);
+  }
+
+  startAnim() {
     this.computeAll();
+    this.isAnimating = true;
+  }
+
+  // Animar insertar
+  animateInsert() {
+    const c = parseInt(document.getElementById('valorInput').value);
+    if (isNaN(c)) return;
+    this.resetAnim();
+    this.recordStep(`Inicio insert(${c})`);
+    this.root = this.insertSteps(this.root, c, Math.floor(Math.random() * 100));
+    this.recordStep(`Fin insert(${c})`);
+    this.startAnim();
   }
 
   insertSteps(nodo, clave, prioridad) {
@@ -147,19 +166,15 @@ class Treap {
     return nodo;
   }
 
+  // Animar eliminar
   animateDelete() {
-    const clave = parseInt(document.getElementById('valorInput').value);
-    if (isNaN(clave)) return;
-    this.steps = [];
-    this.msgs = [];
-    this.highlights = [];
-    this.isAnimating = true;
-    this.stepIndex = 0;
-    this.frameCounter = 0;
-    this.recordStep(`Inicio erase(${clave})`);
-    this.root = this.eraseSteps(this.root, clave);
-    this.recordStep(`Fin erase(${clave})`);
-    this.computeAll();
+    const c = parseInt(document.getElementById('valorInput').value);
+    if (isNaN(c)) return;
+    this.resetAnim();
+    this.recordStep(`Inicio erase(${c})`);
+    this.root = this.eraseSteps(this.root, c);
+    this.recordStep(`Fin erase(${c})`);
+    this.startAnim();
   }
 
   eraseSteps(nodo, clave) {
@@ -168,9 +183,11 @@ class Treap {
       return null;
     }
     this.recordStep(`Compare ${clave} vs ${nodo.clave}`, nodo.clave);
-    if (clave < nodo.clave) nodo.izq = this.eraseSteps(nodo.izq, clave);
-    else if (clave > nodo.clave) nodo.der = this.eraseSteps(nodo.der, clave);
-    else {
+    if (clave < nodo.clave) {
+      nodo.izq = this.eraseSteps(nodo.izq, clave);
+    } else if (clave > nodo.clave) {
+      nodo.der = this.eraseSteps(nodo.der, clave);
+    } else {
       this.recordStep(`Found ${clave}`, nodo.clave);
       if (!nodo.izq) {
         this.recordStep(`Replace by der`);
@@ -193,20 +210,15 @@ class Treap {
     return nodo;
   }
 
+  // Animar buscar
   animateSearch() {
-    const clave = parseInt(document.getElementById('valorInput').value);
-    if (isNaN(clave)) return;
-    this.steps = [];
-    this.msgs = [];
-    this.highlights = [];
-    this.isAnimating = true;
-    this.stepIndex = 0;
-    this.frameCounter = 0;
-    this.recordStep(`Inicio buscar(${clave})`);
-    this.searchSteps(this.root, clave);
-    this.recordStep(`Found ${clave}`, clave);
-    this.recordStep(`Fin buscar(${clave})`);
-    this.computeAll();
+    const c = parseInt(document.getElementById('valorInput').value);
+    if (isNaN(c)) return;
+    this.resetAnim();
+    this.recordStep(`Inicio buscar(${c})`);
+    this.searchSteps(this.root, c);
+    this.recordStep(`Fin buscar(${c})`);
+    this.startAnim();
   }
 
   searchSteps(nodo, clave) {
@@ -220,6 +232,92 @@ class Treap {
     else this.recordStep(`Found ${clave}`, nodo.clave);
   }
 
+  // Animar inorder
+  animateInorder() {
+    this.resetAnim();
+    this.recordStep('Inicio inorder');
+    this._inorderSteps(this.root);
+    this.recordStep('Fin inorder');
+    const resIn = this.inorderTraversal();
+    this.recordStep(`Resultado inorder: ${resIn.join(', ')}`);
+    this.startAnim();
+    statusTimerActive = true;
+    setTimeout(() => { statusTimerActive = false; }, statusDisplayTime);
+  }
+
+  _inorderSteps(node) {
+    if (!node) return;
+    this._inorderSteps(node.izq);
+    this.recordStep(`Visit inorder ${node.clave}`, node.clave);
+    this._inorderSteps(node.der);
+  }
+
+  // Animar preorder
+  animatePreorder() {
+    this.resetAnim();
+    this.recordStep('Inicio preorder');
+    this._preorderSteps(this.root);
+    this.recordStep('Fin preorder');
+    const resPre = this.preorderTraversal();
+    this.recordStep(`Resultado preorder: ${resPre.join(', ')}`);
+    this.startAnim();
+    statusTimerActive = true;
+    setTimeout(() => { statusTimerActive = false; }, statusDisplayTime);
+  }
+
+  _preorderSteps(node) {
+    if (!node) return;
+    this.recordStep(`Visit preorder ${node.clave}`, node.clave);
+    this._preorderSteps(node.izq);
+    this._preorderSteps(node.der);
+  }
+
+  // Animar postorder
+  animatePostorder() {
+    this.resetAnim();
+    this.recordStep('Inicio postorder');
+    this._postorderSteps(this.root);
+    this.recordStep('Fin postorder');
+    const resPost = this.postorderTraversal();
+    this.recordStep(`Resultado postorder: ${resPost.join(', ')}`);
+    this.startAnim();
+    statusTimerActive = true;
+    setTimeout(() => { statusTimerActive = false; }, statusDisplayTime);
+  }
+
+  _postorderSteps(node) {
+    if (!node) return;
+    this._postorderSteps(node.izq);
+    this._postorderSteps(node.der);
+    this.recordStep(`Visit postorder ${node.clave}`, node.clave);
+  }
+
+  // Recorridos directos para calcular Resultado
+  inorderTraversal(node = this.root, out = []) {
+    if (!node) return out;
+    this.inorderTraversal(node.izq, out);
+    out.push(node.clave);
+    this.inorderTraversal(node.der, out);
+    return out;
+  }
+
+  preorderTraversal(node = this.root, out = []) {
+    if (!node) return out;
+    out.push(node.clave);
+    this.preorderTraversal(node.izq, out);
+    this.preorderTraversal(node.der, out);
+    return out;
+  }
+
+  postorderTraversal(node = this.root, out = []) {
+    if (!node) return out;
+    this.postorderTraversal(node.izq, out);
+    this.postorderTraversal(node.der, out);
+    out.push(node.clave);
+    return out;
+  }
+
+  // Layout y dibujo
   computeAll() {
     this.layouts = [];
     this.dataMaps = [];
@@ -266,68 +364,21 @@ class Treap {
     const D = this.dataMaps[next];
     const H = this.highlights[this.stepIndex];
     const msg = this.msgs[this.stepIndex] || '';
-    const t = this.stepIndex < this.layouts.length - 1
-      ? this.frameCounter / this.stepDelay
-      : 1;
+    const t = this.stepIndex < this.layouts.length - 1 ? this.frameCounter / this.stepDelay : 1;
 
-    const drawEdges = n => {
+    function drawEdges(n) {
       if (!n) return;
       const pA = A[n.clave] || B[n.clave];
       const pB = B[n.clave];
       const x = lerp(pA.x, pB.x, t);
       const y = lerp(pA.y, pB.y, t);
-      if (n.izq) {
-        const c = n.izq.clave;
-        const pA2 = A[c] || B[c];
-        const pB2 = B[c];
-        const x2 = lerp(pA2.x, pB2.x, t);
-        const y2 = lerp(pA2.y, pB2.y, t);
-        stroke(150);
-        strokeWeight(2);
-        line(x, y, x2, y2);
-        drawEdges(n.izq);
-      }
-      if (n.der) {
-        const c = n.der.clave;
-        const pA2 = A[c] || B[c];
-        const pB2 = B[c];
-        const x2 = lerp(pA2.x, pB2.x, t);
-        const y2 = lerp(pA2.y, pB2.y, t);
-        stroke(150);
-        strokeWeight(2);
-        line(x, y, x2, y2);
-        drawEdges(n.der);
-      }
-    };
+      if (n.izq) drawEdgePair(n, n.izq, A, B, t, drawEdges);
+      if (n.der) drawEdgePair(n, n.der, A, B, t, drawEdges);
+    }
+
     drawEdges(this.steps[next]);
 
-    for (const k in D) {
-      const data = D[k];
-      const pA = A[k] || B[k];
-      const pB = B[k];
-      const x = lerp(pA.x, pB.x, t);
-      const y = lerp(pA.y, pB.y, t);
-      let color = '#fff';
-      if (parseInt(k) === H) {
-        if (msg.startsWith('Found')) color = 'lightgreen';
-        else color = '#fc8';
-      }
-      fill(color);
-      stroke(50);
-      strokeWeight(2);
-      ellipse(x, y, 60, 60);
-
-      noStroke();
-      fill(0);
-      textAlign(CENTER, BOTTOM);
-      textSize(14);
-      text(data.clave, x, y - 2);
-
-      fill(100);
-      textAlign(CENTER, TOP);
-      textSize(12);
-      text(data.prioridad, x, y + 2);
-    }
+    drawNodes(D, A, B, H, msg, t);
 
     document.getElementById('status').innerText = msg;
   }
@@ -361,6 +412,19 @@ class Treap {
   }
 }
 
+// UI Wrappers
+function inorderUI()   { treap.animateInorder(); }
+function preorderUI()  { treap.animatePreorder(); }
+function postorderUI() { treap.animatePostorder(); }
+function insertarUI() { const v = parseInt(document.getElementById('valorInput').value); if (!isNaN(v)) treap.insertar(v); document.getElementById('valorInput').value = ''; }
+function insertarNodoRandom() { treap.insertar(Math.floor(Math.random() * 100)); }
+function eliminarUI() { const v = parseInt(document.getElementById('valorInput').value); if (!isNaN(v)) treap.eliminar(v); document.getElementById('valorInput').value = ''; }
+function limpiar() { treap.limpiar(); document.getElementById('status').innerText = 'Listo'; }
+function animateInsert() { treap.animateInsert(); }
+function animateDelete() { treap.animateDelete(); }
+function animateSearch() { treap.animateSearch(); }
+
+// Sketch p5.js
 let treap;
 function setup() {
   createCanvas(1200, 800);
@@ -376,40 +440,52 @@ function draw() {
     if (treap.frameCounter >= treap.stepDelay) {
       treap.frameCounter = 0;
       treap.stepIndex++;
-      if (treap.stepIndex >= treap.steps.length) {
-        treap.isAnimating = false;
-        document.getElementById('status').innerText = 'Listo';
-      }
+      if (treap.stepIndex >= treap.steps.length) treap.isAnimating = false;
     }
   } else {
-    document.getElementById('status').innerText = 'Listo';
+    if (!statusTimerActive) document.getElementById('status').innerText = 'Listo';
     treap.drawStatic();
   }
 }
 
-function insertarUI() {
-  const v = parseInt(document.getElementById('valorInput').value);
-  if (!isNaN(v)) treap.insertar(v);
-  document.getElementById('valorInput').value = '';
+// Funciones auxiliares de dibujo
+function drawEdgePair(parent, child, A, B, t, recurse) {
+  const c = child.clave;
+  const pA = A[parent.clave] || B[parent.clave];
+  const pB = B[parent.clave];
+  const x = lerp(pA.x, pB.x, t);
+  const y = lerp(pA.y, pB.y, t);
+  const pA2 = A[c] || B[c];
+  const pB2 = B[c];
+  const x2 = lerp(pA2.x, pB2.x, t);
+  const y2 = lerp(pA2.y, pB2.y, t);
+  stroke(150);
+  strokeWeight(2);
+  line(x, y, x2, y2);
+  recurse(child);
 }
 
-function insertarNodoRandom() {
-  treap.insertar(Math.floor(Math.random() * 100));
+function drawNodes(D, A, B, H, msg, t) {
+  for (const k in D) {
+    const data = D[k];
+    const pA = A[k] || B[k];
+    const pB = B[k];
+    const x = lerp(pA.x, pB.x, t);
+    const y = lerp(pA.y, pB.y, t);
+    let color = '#fff';
+    if (parseInt(k) === H) color = msg.startsWith('Visit') ? '#fc8' : 'lightgreen';
+    fill(color);
+    stroke(50);
+    strokeWeight(2);
+    ellipse(x, y, 60, 60);
+    noStroke();
+    fill(0);
+    textAlign(CENTER, BOTTOM);
+    textSize(14);
+    text(data.clave, x, y - 2);
+    fill(100);
+    textAlign(CENTER, TOP);
+    textSize(12);
+    text(data.prioridad, x, y + 2);
+  }
 }
-
-function eliminarUI() {
-  const v = parseInt(document.getElementById('valorInput').value);
-  if (!isNaN(v)) treap.eliminar(v);
-  document.getElementById('valorInput').value = '';
-}
-
-function limpiar() {
-  treap.limpiar();
-  document.getElementById('status').innerText = 'Listo';
-}
-
-function animateInsert() { treap.animateInsert(); }
-
-function animateDelete() { treap.animateDelete(); }
-
-function animateSearch() { treap.animateSearch(); }
