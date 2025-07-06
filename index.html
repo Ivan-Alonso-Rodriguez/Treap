@@ -13,7 +13,6 @@
       align-items: center;
       background: #eee;
     }
-
     #controls {
       margin: 20px 0;
       background: rgba(255,255,255,0.95);
@@ -21,16 +20,8 @@
       border-radius: 4px;
       box-shadow: 0 0 5px rgba(0,0,0,0.2);
     }
-
-    #controls input {
-      width: 60px;
-      margin-right: 6px;
-    }
-
-    #controls button {
-      margin-right: 6px;
-    }
-
+    #controls input { width: 60px; margin-right: 6px; }
+    #controls button { margin-right: 6px; }
     #status {
       min-height: 24px;
       padding: 4px 8px;
@@ -39,10 +30,9 @@
       border-radius: 4px;
       box-shadow: 0 0 3px rgba(0,0,0,0.2);
       font: 14px Verdana, sans-serif;
-      width: 300px;
+      width: 400px;
       text-align: center;
     }
-
     canvas {
       display: block;
       border: 1px solid #ccc;
@@ -53,16 +43,17 @@
 <body>
   <div id="controls">
     <input type="number" id="valorInput" placeholder="Valor">
-
     <button onclick="insertarUI()">Insertar</button>
     <button onclick="insertarNodoRandom()">Insertar Random</button>
     <button onclick="eliminarUI()">Eliminar</button>
     <button onclick="limpiar()">Limpiar</button>
-    <button onclick="animateInsert()">Insertar Animado</button>
-    <button onclick="animateDelete()">Eliminar Animado</button>
-    <button onclick="animateSearch()">Buscar Animado</button>
+    <button onclick="animateInsert()">Animar Insertar</button>
+    <button onclick="animateDelete()">Animar Eliminar</button>
+    <button onclick="animateSearch()">Animar Buscar</button>
+    <button onclick="inorderUI()">Inorder</button>
+    <button onclick="preorderUI()">Preorder</button>
+    <button onclick="postorderUI()">Postorder</button>
   </div>
-
   <div id="status">Listo</div>
 </body>
 </html>
