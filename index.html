@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Treap Visualizer con Animación Suavizada</title>
+  <title>Treap Visualizer</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
   <script src="treap.js"></script>
   <style>
@@ -13,6 +13,7 @@
       align-items: center;
       background: #eee;
     }
+
     #controls {
       margin: 20px 0;
       background: rgba(255,255,255,0.95);
@@ -20,8 +21,16 @@
       border-radius: 4px;
       box-shadow: 0 0 5px rgba(0,0,0,0.2);
     }
-    #controls input { width: 60px; margin-right: 6px; }
-    #controls button { margin-right: 6px; }
+
+    #controls input {
+      width: 60px;
+      margin-right: 6px;
+    }
+
+    #controls button {
+      margin-right: 6px;
+    }
+
     #status {
       min-height: 24px;
       padding: 4px 8px;
@@ -29,11 +38,11 @@
       background: #fff;
       border-radius: 4px;
       box-shadow: 0 0 3px rgba(0,0,0,0.2);
-      font-family: Verdana, sans-serif;
-      font-size: 14px;
+      font: 14px Verdana, sans-serif;
       width: 300px;
       text-align: center;
     }
+
     canvas {
       display: block;
       border: 1px solid #ccc;
@@ -44,13 +53,16 @@
 <body>
   <div id="controls">
     <input type="number" id="valorInput" placeholder="Valor">
-    <button onclick="insertarNodo()">Insertar</button>
+
+    <button onclick="insertarUI()">Insertar</button>
     <button onclick="insertarNodoRandom()">Insertar Random</button>
-    <button onclick="eliminarNodo()">Eliminar</button>
+    <button onclick="eliminarUI()">Eliminar</button>
     <button onclick="limpiar()">Limpiar</button>
-    <button onclick="animateInsert()">Animar Insertar</button>
-    <button onclick="animateDelete()">Animar Eliminar</button>
+    <button onclick="animateInsert()">Insertar Animado</button>
+    <button onclick="animateDelete()">Eliminar Animado</button>
+    <button onclick="animateSearch()">Buscar Animado</button>
   </div>
+
   <div id="status">Listo</div>
 </body>
 </html>
